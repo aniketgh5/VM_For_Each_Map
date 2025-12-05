@@ -26,4 +26,18 @@ stages:
         - task: TerraformInstaller@1
           inputs:
             terraformVersion: 'latest'
-         
+  - stage: Terraforminit
+    displayName: TerraformInit
+    jobs:
+      - job: 
+        steps:
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/env/dev'
+            backendServiceArm: 'aniket'
+            backendAzureRmResourceGroupName: 'backend-rg02'
+            backendAzureRmStorageAccountName: 'backendstg03'
+            backendAzureRmContainerName: 'aniket'
+            backendAzureRmKey: 'dev.tfstate'
