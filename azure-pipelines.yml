@@ -15,6 +15,14 @@ stages:
     jobs:
       - job: Terraforminstalljob
         steps:
+        - task: Bash@3
+          inputs:
+            targetType: 'inline'
+            script: |
+              # Write your commands here
+              
+              echo 'Install ZIP'
+              sudo apt install unzip
         - task: TerraformInstaller@1
           inputs:
             terraformVersion: 'latest'
