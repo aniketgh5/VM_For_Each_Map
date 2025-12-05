@@ -57,10 +57,9 @@ stages:
             targetType: 'inline'
             script: |
               # Write your commands here
-              
               echo 'Copy tfvars to working directory'
               echo "Copying terraform.tfvars to env/dev"
-                          cp "$(terraformTfvars.secureFilePath)" "$(System.DefaultWorkingDirectory)/env/dev/terraform.tfvars"
+              cp "$(terraformTfvars.secureFilePath)" "$(System.DefaultWorkingDirectory)/env/dev/terraform.tfvars"
         - task: TerraformTask@5
           inputs:
             provider: 'azurerm'
