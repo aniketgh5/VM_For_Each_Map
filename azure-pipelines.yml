@@ -44,3 +44,15 @@ stages:
             backendAzureRmStorageAccountName: 'backendstg03'
             backendAzureRmContainerName: 'aniket'
             backendAzureRmKey: 'dev.tfstate'
+  - stage: 
+    displayName: Terraform plan
+    jobs:
+      - job: 
+        steps:
+
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'plan'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/env/dev'
+            environmentServiceNameAzureRM: 'aniket'
