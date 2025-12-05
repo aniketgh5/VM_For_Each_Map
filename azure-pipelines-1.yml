@@ -69,6 +69,7 @@ stages:
           inputs:
             provider: 'azurerm'
             command: 'init'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/env/dev'
             backendServiceArm: 'aniket'
             backendAzureRmStorageAccountName: 'backendstg03'
             backendAzureRmContainerName: 'aniket'
