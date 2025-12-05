@@ -50,6 +50,7 @@ stages:
       - job: 
         steps:
         - task: DownloadSecureFile@1
+          name: terraformTfvars 
           inputs:
             secureFile: 'terraform.tfvars'
         - task: Bash@3
