@@ -47,7 +47,7 @@ stages:
             backendAzureRmStorageAccountName: 'backendstg03'
             backendAzureRmContainerName: 'aniket'
             backendAzureRmKey: 'dev.tfstate'
-  - stage: 
+  - stage: Scan_and_Plan
     displayName: Terraform plan
     jobs:
       - job: 
@@ -59,6 +59,7 @@ stages:
           inputs:
             provider: 'azurerm'
             command: 'init'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/env/dev'
             backendServiceArm: 'aniket'
             backendAzureRmResourceGroupName: 'backend-rg02'
             backendAzureRmStorageAccountName: 'backendstg03'
