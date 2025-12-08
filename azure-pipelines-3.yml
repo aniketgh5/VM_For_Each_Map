@@ -6,7 +6,7 @@ trigger:
 
 variables:
  - name: PATH
-   value: $(System.DefaultWorkingDirectory)/env/dev
+   value: $(System.DefaultWorkingDirectory)env/dev
 pool: Remote_Agent
 
 stages:
