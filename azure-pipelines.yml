@@ -1,9 +1,9 @@
 
-trigger:
-  branches:
-    include:
-    - main
-    - feature/*
+trigger: none
+  # branches:
+  #   include:
+  #   - main
+  #   - feature/*
 
 pool: Remote_Agent
 
