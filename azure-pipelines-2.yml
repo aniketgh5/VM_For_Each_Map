@@ -1,22 +1,50 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+trigger: none
+  # branches:
+  #   exclude:
+  #     - feature/*
+  #     - main
 
-trigger:
- branches:
-   include:
-     - main
-     - feature/*
+# ---------- PARAMETERS ----------
+parameters:
+- name: environment
+  type: string
+  default: dev
+  values:
+    - dev
+    - qa
+    - prod
 
+# ---------- VARIABLES ----------
+variables:
+- name: TF_WORKDIR
+  value: '$(System.DefaultWorkingDirectory)/env/${{ parameters.environment }}'
 
-pool: Remote_Agent
+pool:
+  name: Remote_Agent
 
 stages:
-  - stage: 
-    jobs:
-      - job: 
-        steps:
-          - task: TerraformInstaller@1
-            inputs:
-              terraformVersion: 'latest'
+- stage: TerraformBuild
+  displayName: 'Terraform ${{ parameters.environment }}'
+  jobs:
+  - job: TerraformBuild
+    displayName: 'Terraform Build - ${{ parameters.environment }}'
+    steps:
+    - task: TerraformTask@5
+      displayName: 'Terraform init'
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(TF_WORKDIR)'
+        backendServiceArm: 'aniket'
+        backendAzureRmStorageAccountName: 'backendstg03'
+        backendAzureRmContainerName: 'aniket'
+        backendAzureRmKey: '${{ parameters.environment }}.tfstate'
+
+    - task: TerraformTask@5
+      displayName: 'Terraform plan'
+      inputs:
+        provider: 'azurerm'
+        command: 'validate'
+        workingDirectory: '$(TF_WORKDIR)'
+
+
