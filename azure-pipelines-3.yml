@@ -1,8 +1,8 @@
-trigger: 
-  branches:
-    exclude:
-      - feature/*
-      - main
+trigger: none
+  # branches:
+  #   exclude:
+  #     - feature/*
+  #     - main
 
 # ---------- PARAMETERS ----------
 parameters:
