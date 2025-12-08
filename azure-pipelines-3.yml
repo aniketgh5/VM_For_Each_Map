@@ -1,0 +1,31 @@
+trigger:
+ branches:
+   include:
+     - main
+     - feature/*
+
+variables:
+ - name: PATH
+   value: $(System.DefaultWorkingDirectory)/env/dev
+pool: Remote_Agent
+
+stages:
+  - stage: TerraformBuild
+    jobs:
+      - job: TerraformBuild
+        steps:
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: '$PATH'
+            backendServiceArm: 'aniket'
+            backendAzureRmStorageAccountName: 'backendstg03'
+            backendAzureRmContainerName: 'aniket'
+            backendAzureRmKey: 'dev.tfstate'
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'plan'
+            workingDirectory: '$PATH'
+            environmentServiceNameAzureRM: 'aniket'
