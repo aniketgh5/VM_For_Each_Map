@@ -1,3 +1,15 @@
+trigger:
+  branches:
+    include:
+      - main
+      - feature/*
+
+pool:
+  name: Remote_Agent
+
+# =====================
+# PARAMETERS
+# =====================
 parameters:
 - name: environment
   type: string
@@ -15,63 +27,118 @@ parameters:
   type: string
   default: terraform.tfvars
 
+# =====================
+# VARIABLES
+# =====================
 variables:
 - name: TF_WORKDIR
   value: '$(System.DefaultWorkingDirectory)/env/${{ parameters.environment }}'
 
-- name: TFSTATE_KEY
+- name: BACKEND_RG
+  value: 'backend-rg02'
+
+- name: BACKEND_STORAGE
+  value: 'backendstg03'
+
+- name: BACKEND_CONTAINER
+  value: 'aniket'
+
+- name: BACKEND_KEY
   value: '${{ parameters.environment }}.tfstate'
 
+# =====================
+# STAGES
+# =====================
 stages:
-# INSTALL
+# ---------- Stage 1: Install Terraform ----------
 - stage: Build
+  displayName: 'Terraform install'
   jobs:
-  - job:
+  - job: TerraformInstallJob
+    displayName: 'Install Terraform and dependencies'
     steps:
+    - task: Bash@3
+      displayName: 'Install unzip'
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo 'Install ZIP'
+          sudo apt-get update -y
+          sudo apt-get install -y unzip
+
     - task: TerraformInstaller@1
+      displayName: 'Install Terraform'
       inputs:
         terraformVersion: '${{ parameters.terraformVersion }}'
 
-# INIT
+# ---------- Stage 2: Terraform init ----------
 - stage: TerraformInit
+  displayName: 'Terraform Init - ${{ parameters.environment }}'
+  dependsOn: Build
   jobs:
-  - job:
+  - job: TerraformInitJob
+    displayName: 'Terraform init'
     steps:
     - task: TerraformInstaller@1
+      displayName: 'Install Terraform'
       inputs:
         terraformVersion: '${{ parameters.terraformVersion }}'
 
     - task: TerraformTask@5
+      displayName: 'Terraform init'
       inputs:
-        provider: azurerm
-        command: init
+        provider: 'azurerm'
+        command: 'init'
         workingDirectory: '$(TF_WORKDIR)'
-        backendAzureRmKey: '$(TFSTATE_KEY)'
+        backendServiceArm: 'aniket'
+        backendAzureRmResourceGroupName: '$(BACKEND_RG)'
+        backendAzureRmStorageAccountName: '$(BACKEND_STORAGE)'
+        backendAzureRmContainerName: '$(BACKEND_CONTAINER)'
+        backendAzureRmKey: '$(BACKEND_KEY)'
 
-# PLAN
+# ---------- Stage 3: Terraform plan ----------
 - stage: TerraformPlan
+  displayName: 'Terraform plan - ${{ parameters.environment }}'
+  dependsOn: TerraformInit
   jobs:
-  - job:
-    displayName: "Terraform Plan"
+  - job: TerraformPlanJob
+    displayName: 'Terraform plan'
     steps:
     - task: DownloadSecureFile@1
       name: terraformTfvars
+      displayName: 'Download tfvars file'
       inputs:
         secureFile: '${{ parameters.tfvarsFileName }}'
 
     - task: TerraformInstaller@1
+      displayName: 'Install Terraform'
       inputs:
         terraformVersion: '${{ parameters.terraformVersion }}'
 
     - task: Bash@3
+      displayName: 'Copy tfvars to working directory'
       inputs:
         targetType: 'inline'
         script: |
-          echo "Copying tfvars file"
+          echo 'Copy tfvars to working directory'
+          echo "Copying $(terraformTfvars.secureFilePath) to $(TF_WORKDIR)/$(tfvarsFileName)"
           cp "$(terraformTfvars.secureFilePath)" "$(TF_WORKDIR)/${{ parameters.tfvarsFileName }}"
 
     - task: TerraformTask@5
+      displayName: 'Terraform init (plan stage)'
       inputs:
-        provider: azurerm
-        command: plan
+        provider: 'azurerm'
+        command: 'init'
         workingDirectory: '$(TF_WORKDIR)'
+        backendServiceArm: 'aniket'
+        backendAzureRmStorageAccountName: '$(BACKEND_STORAGE)'
+        backendAzureRmContainerName: '$(BACKEND_CONTAINER)'
+        backendAzureRmKey: '$(BACKEND_KEY)'
+
+    - task: TerraformTask@5
+      displayName: 'Terraform plan'
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        workingDirectory: '$(TF_WORKDIR)'
+        environmentServiceNameAzureRM: 'aniket'
