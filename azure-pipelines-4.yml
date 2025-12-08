@@ -1,0 +1,77 @@
+parameters:
+- name: environment
+  type: string
+  default: dev
+  values:
+    - dev
+    - qa
+    - prod
+
+- name: terraformVersion
+  type: string
+  default: latest
+
+- name: tfvarsFileName
+  type: string
+  default: terraform.tfvars
+
+variables:
+- name: TF_WORKDIR
+  value: '$(System.DefaultWorkingDirectory)/env/${{ parameters.environment }}'
+
+- name: TFSTATE_KEY
+  value: '${{ parameters.environment }}.tfstate'
+
+stages:
+# INSTALL
+- stage: Build
+  jobs:
+  - job:
+    steps:
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: '${{ parameters.terraformVersion }}'
+
+# INIT
+- stage: TerraformInit
+  jobs:
+  - job:
+    steps:
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: '${{ parameters.terraformVersion }}'
+
+    - task: TerraformTask@5
+      inputs:
+        provider: azurerm
+        command: init
+        workingDirectory: '$(TF_WORKDIR)'
+        backendAzureRmKey: '$(TFSTATE_KEY)'
+
+# PLAN
+- stage: TerraformPlan
+  jobs:
+  - job:
+    displayName: "Terraform Plan"
+    steps:
+    - task: DownloadSecureFile@1
+      name: terraformTfvars
+      inputs:
+        secureFile: '${{ parameters.tfvarsFileName }}'
+
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: '${{ parameters.terraformVersion }}'
+
+    - task: Bash@3
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo "Copying tfvars file"
+          cp "$(terraformTfvars.secureFilePath)" "$(TF_WORKDIR)/${{ parameters.tfvarsFileName }}"
+
+    - task: TerraformTask@5
+      inputs:
+        provider: azurerm
+        command: plan
+        workingDirectory: '$(TF_WORKDIR)'
