@@ -46,3 +46,5 @@ stages:
         provider: 'azurerm'
         command: 'validate'
         workingDirectory: '$(TF_WORKDIR)'
+
+
