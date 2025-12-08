@@ -1,6 +1,7 @@
-trigger:
+trigger: 
   branches:
-    include:
+    exclude:
+      - feature/*
       - main
 
 # ---------- PARAMETERS ----------
@@ -43,6 +44,5 @@ stages:
       displayName: 'Terraform plan'
       inputs:
         provider: 'azurerm'
-        command: 'plan'
+        command: 'validate'
         workingDirectory: '$(TF_WORKDIR)'
-        environmentServiceNameAzureRM: 'aniket'
