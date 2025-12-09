@@ -1,31 +1,64 @@
-
 trigger: none
   # branches:
   #   include:
   #   - main
   #   - feature/*
 
+
+parameters:
+- name: environment
+  type: string
+  default: dev
+  values:
+    - dev
+    - qa
+    - prod
+
+
+
+
+
 pool: Remote_Agent
+
+
+
+
+variables:
+- name: TF_WORKDIR
+  value: '$(System.DefaultWorkingDirectory)/env'
+
+
 
 stages:
   - stage: Terraformbuild
     jobs:
       - job: Terraformbuild
         steps:
+        - task: DownloadSecureFile@1
+          name: terraformtfvars
+          inputs:
+            secureFile: 'terraform.tfvars'
         - task: TerraformInstaller@1
           inputs:
             terraformVersion: 'latest'
+        - task: Bash@3
+          inputs:
+            targetType: 'inline'
+            script:
+              # Write your commands here
+              # echo 'Copy TFVARS'
+              cp "$(terraformtfvars.secureFilePath)" "$(TF_WORKDIR)/dev"
         - task: TerraformTask@5
           inputs:
             provider: 'azurerm'
             command: 'init'
             backendServiceArm: 'aniket'
             backendAzureRmStorageAccountName: 'backendstg03'
-            workingDirectory: '$(System.DefaultWorkingDirectory)/env/dev'
+            workingDirectory: '$(TF_WORKDIR)/dev'
             backendAzureRmContainerName: 'aniket'
             backendAzureRmKey: 'dev.tfstate'
         - task: TerraformTask@5
           inputs:
             provider: 'azurerm'
             command: 'validate'
-            workingDirectory: '$(System.DefaultWorkingDirectory)/env/dev'
+            workingDirectory: '$(TF_WORKDIR)/dev'
