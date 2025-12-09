@@ -47,18 +47,18 @@ stages:
             script:
               # Write your commands here
               # echo 'Copy TFVARS'
-              cp "$(terraformtfvars.secureFilePath)" "$(TF_WORKDIR)/dev"
+              cp "$(terraformtfvars.secureFilePath)" "$(TF_WORKDIR)/${{ parameters.environment }}"
         - task: TerraformTask@5
           inputs:
             provider: 'azurerm'
             command: 'init'
             backendServiceArm: 'aniket'
             backendAzureRmStorageAccountName: 'backendstg03'
-            workingDirectory: '$(TF_WORKDIR)/dev'
+            workingDirectory: '$(TF_WORKDIR)/${{ parameters.environment }}'
             backendAzureRmContainerName: 'aniket'
             backendAzureRmKey: 'dev.tfstate'
         - task: TerraformTask@5
           inputs:
             provider: 'azurerm'
             command: 'validate'
-            workingDirectory: '$(TF_WORKDIR)/dev'
+            workingDirectory: '$(TF_WORKDIR)/${{ parameters.environment }}'
