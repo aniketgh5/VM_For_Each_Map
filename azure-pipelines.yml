@@ -67,5 +67,11 @@ stages:
             provider: 'azurerm'
             command: 'validate'
             workingDirectory: '$(TF_WORKDIR)/${{ parameters.environment }}'
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            workingDirectory: '$(TF_WORKDIR)/${{ parameters.environment }}'
+            command: 'plan'
+            environmentServiceNameAzureRM: 'aniket'
 
 
