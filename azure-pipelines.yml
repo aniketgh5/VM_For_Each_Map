@@ -1,9 +1,9 @@
-trigger: 
-  branches:
-    include:
-    - feature/*
-    exclude:
-      - main
+trigger: none
+  # branches:
+  #   include:
+  #   - feature/*
+  #   exclude:
+  #     - main
 
 
 parameters:
@@ -38,7 +38,7 @@ stages:
         - task: DownloadSecureFile@1
           name: terraformtfvars
           inputs:
-            secureFile: 'terraform.tfvars'
+            secureFile: '${{ parameters.environment }}.tfvars'
         - task: TerraformInstaller@1
           inputs:
             terraformVersion: 'latest'
